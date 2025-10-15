@@ -50,6 +50,7 @@
 #include "vapi/vsl.h"
 #include "vapi/vsm.h"
 #include "vcli.h"
+#include "vqueue.h"
 #include "vjsn.h"
 #include "vre.h"
 #include "vsub.h"

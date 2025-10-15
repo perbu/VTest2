@@ -41,7 +41,6 @@
 
 #include "miniobj.h"
 #include "vas.h"
-#include "vqueue.h"
 #include "vsb.h"
 
 #define VTC_CHECK_NAME(vl, nm, type, chr)				\

@@ -40,6 +40,8 @@
 #include <sys/time.h> /* for MUSL */
 
 #include "vtc.h"
+
+#include "vqueue.h"
 #include "vtcp.h"
 #include "vtim.h"
 #include "vsa.h"

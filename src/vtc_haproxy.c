@@ -43,6 +43,7 @@
 
 #include "vtc.h"
 
+#include "vqueue.h"
 #include "vfil.h"
 #include "vpf.h"
 #include "vre.h"

@@ -162,6 +162,7 @@
 
 #include "vtc.h"
 
+#include "vqueue.h"
 #include "vtim.h"
 #include "vre.h"
 

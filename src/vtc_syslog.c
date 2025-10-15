@@ -40,6 +40,7 @@
 
 #include "vtc.h"
 
+#include "vqueue.h"
 #include "vsa.h"
 #include "vtcp.h"
 #include "vudp.h"

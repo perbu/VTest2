@@ -28,6 +28,8 @@
  * SUCH DAMAGE.
  */
 
+#include "vqueue.h"
+
 #define MAX_HDR		64
 
 struct vtc_sess {
