@@ -41,7 +41,6 @@ LIBS=	-L/usr/local/lib \
 
 vtest: ${DEPS} ${SRCS}
 	${MAKE} \
-		 DEFINES= \
 		 `for s in $(SRCS); do echo $${s%.c}.o;done`
 
 	${CC} \
