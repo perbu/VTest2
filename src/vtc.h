@@ -29,6 +29,7 @@
  *
  */
 
+#include <sys/types.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdint.h>
