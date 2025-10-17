@@ -955,18 +955,30 @@ haproxy_wait(struct haproxy *h)
 	h->pid = -1;
 }
 
-#define HAPROXY_BE_FD_STR     "fd@${"
-#define HAPROXY_BE_FD_STRLEN  strlen(HAPROXY_BE_FD_STR)
+#define HAPROXY_FD_ADDR_FAM_PREFIX        "fd@${"
+#define HAPROXY_FD_ADDR_FAM_PREFIX_LEN    strlen(HAPROXY_FD_ADDR_FAM_PREFIX)
+
+#define HAPROXY_QUIC_SOCK_TYPE            "quic"
+#define HAPROXY_QUIC_SOCK_TYPE_PREFIX     HAPROXY_QUIC_SOCK_TYPE "+"
+#define HAPROXY_QUIC_SOCK_TYPE_PREFIX_LEN strlen(HAPROXY_QUIC_SOCK_TYPE_PREFIX)
+
+#define HAPROXY_VTC_SOCK_TYPE_ENV_VAR     "VTC_SOCK_TYPE"
+#define HAPROXY_VTC_SOCK_TYPE_PREFIX      "${" HAPROXY_VTC_SOCK_TYPE_ENV_VAR "}+"
+#define HAPROXY_VTC_SOCK_TYPE_PREFIX_LEN  strlen(HAPROXY_VTC_SOCK_TYPE_PREFIX)
 
 static int
 haproxy_build_backends(struct haproxy *h, const char *vsb_data)
 {
 	char *s, *p, *q;
+	char *sock_type = getenv(HAPROXY_VTC_SOCK_TYPE_ENV_VAR);
 
 	s = strdup(vsb_data);
 	if (!s)
 		return (-1);
 
+	if (sock_type)
+		vtc_log(h->vl, 4, "%s value: '%s'",
+		        HAPROXY_VTC_SOCK_TYPE_ENV_VAR, sock_type);
 	p = s;
 	while (1) {
 		int sock;
@@ -976,12 +988,28 @@ haproxy_build_backends(struct haproxy *h, const char *vsb_data)
 		const struct suckaddr *sua;
 		int quic_sock;
 
-		p = strstr(p, HAPROXY_BE_FD_STR);
+		p = strstr(p, HAPROXY_FD_ADDR_FAM_PREFIX);
 		if (!p)
 			break;
 
-		quic_sock = p - s >= 5 && !memcmp(p - 5, "quic+", 5);
-		q = p += HAPROXY_BE_FD_STRLEN;
+		/* The socket to be used is a QUIC one if the fd addresses
+		 * are prefixed by the haproxy sock type "quic" as follows:
+		 *    bind "quic+fd@${...}"
+		 *    bind "${VTC_SOCK_TYPE}+fd@${...}"
+		 * with "quic" as VTC_SOCK_TYPE environment variable value.
+		 */
+		quic_sock =
+			(p - s >= HAPROXY_QUIC_SOCK_TYPE_PREFIX_LEN &&
+			 !memcmp(p - HAPROXY_QUIC_SOCK_TYPE_PREFIX_LEN,
+			         HAPROXY_QUIC_SOCK_TYPE_PREFIX,
+			         HAPROXY_QUIC_SOCK_TYPE_PREFIX_LEN)) ||
+			(p - s >= HAPROXY_VTC_SOCK_TYPE_PREFIX_LEN &&
+			 !memcmp(p - HAPROXY_VTC_SOCK_TYPE_PREFIX_LEN,
+			         HAPROXY_VTC_SOCK_TYPE_PREFIX,
+			         HAPROXY_VTC_SOCK_TYPE_PREFIX_LEN) &&
+			 !strcmp(sock_type, HAPROXY_QUIC_SOCK_TYPE));
+
+		q = p += HAPROXY_FD_ADDR_FAM_PREFIX_LEN;
 		while (*q && *q != '}')
 			q++;
 		if (*q != '}')
@@ -1011,7 +1039,8 @@ haproxy_build_backends(struct haproxy *h, const char *vsb_data)
 		macro_def(h->vl, buf, "port", "%s", port);
 
 		bprintf(buf, "%d", sock);
-		vtc_log(h->vl, 4, "setenv(%s, %s)", p, buf);
+		vtc_log(h->vl, 4, "setenv(%s, %s) for %s socket", p, buf,
+		        quic_sock ? "QUIC" : "TCP");
 		haproxy_add_envar(h, p, buf);
 		p = q;
 	}
