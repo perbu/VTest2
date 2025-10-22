@@ -141,13 +141,10 @@ struct extension {
 #define EXTENSION_MAGIC		0x69e788db
        VTAILQ_ENTRY(extension)	list;
        const char		*name;
-       int			fd;
 };
 
 static VTAILQ_HEAD(,extension) extension_list =
     VTAILQ_HEAD_INITIALIZER(extension_list);
-
-static int max_ext_fd = STDERR_FILENO + 1;
 
 void
 add_extension(const char *name)
@@ -162,14 +159,12 @@ add_extension(const char *name)
 		    name, strerror(errno));
 		exit(2);
 	}
+	close(fd);
 
 	ALLOC_OBJ(ep, EXTENSION_MAGIC);
 	AN(ep);
 	ep->name = strdup(name);
 	AN(ep->name);
-	ep->fd = fd;
-	if (fd > max_ext_fd)
-		max_ext_fd = fd;
 	VTAILQ_INSERT_HEAD(&extension_list, ep, list);
 }
 
@@ -180,25 +175,12 @@ init_extensions(void)
 
 	VTAILQ_FOREACH(ep, &extension_list, list) {
 		CHECK_OBJ_NOTNULL(ep, EXTENSION_MAGIC);
-		void *dlp = fdlopen(ep->fd, RTLD_NOW);
+		void *dlp = dlopen(ep->name, RTLD_NOW);
 		if (dlp == NULL) {
 			vtc_log(vltop, 1, "Cannot dlopen '%s': %s\n",
 			    ep->name, dlerror());
 			return (1);
 		}
-	}
-	return (0);
-}
-
-static int
-fd_is_extension(int fd)
-{
-	struct extension *ep;
-
-	VTAILQ_FOREACH(ep, &extension_list, list) {
-		CHECK_OBJ_NOTNULL(ep, EXTENSION_MAGIC);
-		if (fd == ep->fd)
-			return (1);
 	}
 	return (0);
 }
@@ -713,17 +695,12 @@ exec_file(const char *fn, const char *script, const char *tmpdir,
 	FILE *f;
 	struct vsb *vsb;
 	const char *p;
-	int fd;
 
 	AN(tmpdir);
 
 	(void)signal(SIGPIPE, SIG_IGN);
 
-	for (fd = STDERR_FILENO + 1; fd < max_ext_fd; fd++) {
-		if (!fd_is_extension(fd))
-			(void)close(fd);
-	}
-	VSUB_closefrom(max_ext_fd + 1);
+	VSUB_closefrom(STDERR_FILENO + 1);
 
 	PTOK(pthread_mutex_init(&vtc_vrnd_mtx, NULL));
 	VRND_Lock = vtc_vrnd_lock;
