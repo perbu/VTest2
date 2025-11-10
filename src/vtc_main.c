@@ -844,6 +844,7 @@ main(int argc, char * const *argv)
 
 	cwd = getcwd(buf, sizeof buf);
 	extmacro_def("pwd", NULL, "%s", cwd);
+	extmacro_def("topsrc", NULL, "%s", cwd);
 
 	extmacro_def("date", macro_func_date, NULL);
 	extmacro_def("string", macro_func_string, NULL);
