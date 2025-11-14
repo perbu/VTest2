@@ -5,10 +5,9 @@
 //!
 //! This is a direct port of the C implementation's frame handling.
 
-use super::error::{Error, ErrorCode, Result};
 use super::frames::*;
 use super::settings::SettingsParameter;
-use bytes::{Buf, BufMut, Bytes, BytesMut};
+use bytes::{BufMut, Bytes, BytesMut};
 use std::io::{self, Read, Write};
 
 /// HTTP/2 frame header size (9 bytes)
@@ -19,15 +18,15 @@ pub const MAX_FRAME_SIZE: usize = 0x00FFFFFF;
 
 /// Frame codec for encoding/decoding HTTP/2 frames
 pub struct FrameCodec {
-    /// Buffer for reading
-    read_buffer: BytesMut,
+    /// Buffer for reading (reserved for future use)
+    _read_buffer: BytesMut,
 }
 
 impl FrameCodec {
     /// Create a new frame codec
     pub fn new() -> Self {
         FrameCodec {
-            read_buffer: BytesMut::with_capacity(4096),
+            _read_buffer: BytesMut::with_capacity(4096),
         }
     }
 
@@ -417,6 +416,8 @@ impl Default for FrameCodec {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::http::h2::SettingsBuilder;
+    use bytes::Bytes;
 
     #[test]
     fn test_encode_decode_header() {

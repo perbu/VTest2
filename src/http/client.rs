@@ -4,9 +4,8 @@
 
 use super::{
     chunked, Error, Headers, HttpRequest, HttpResponse, HttpSession, Method, ResponseParser,
-    Result, SessionOps, Status, Version, CRLF,
+    Result, SessionOps,
 };
-use std::io::{Read, Write};
 
 /// HTTP client
 ///
@@ -213,7 +212,7 @@ impl<S: SessionOps> HttpClient<S> {
 mod tests {
     use super::*;
     use crate::http::session::FdSessionOps;
-    use std::io::Write;
+    use std::io::{Read, Write};
     use std::net::{TcpListener, TcpStream};
     use std::thread;
 

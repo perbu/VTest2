@@ -3,7 +3,7 @@
 //! This module provides encoding and decoding for HTTP chunked transfer encoding.
 
 use super::{Error, Result, CRLF};
-use std::io::{self, Read, Write};
+use std::io::Write;
 
 /// Chunked encoder
 ///
