@@ -42,6 +42,7 @@ pub mod parser;
 pub mod server;
 pub mod session;
 pub mod chunked;
+pub mod tls;
 
 pub use client::HttpClient;
 pub use headers::Headers;
