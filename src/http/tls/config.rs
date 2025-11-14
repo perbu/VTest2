@@ -342,25 +342,36 @@ impl ServerConfigBuilder {
     /// Set ALPN protocols
     pub fn alpn(mut self, protocols: &[&str]) -> Result<Self, TlsError> {
         // For server, we need to set ALPN select callback
-        let protocols_vec: Vec<Vec<u8>> = protocols
-            .iter()
-            .map(|p| p.as_bytes().to_vec())
-            .collect();
+        // Convert protocols to wire format (length-prefixed)
+        let protocols_vec: Vec<String> = protocols.iter().map(|s| s.to_string()).collect();
 
-        // Store protocols in a way that can be used by the callback
-        // Note: This is simplified - in production you'd want to handle this more carefully
-        let protocols_bytes: Vec<u8> = protocols
-            .iter()
-            .flat_map(|p| {
-                let mut v = vec![p.len() as u8];
-                v.extend_from_slice(p.as_bytes());
-                v
-            })
-            .collect();
+        // Clone for the callback
+        let protos_for_callback = protocols_vec.clone();
 
-        // Set the ALPN selection callback
-        // Note: This is a simplified version
-        self.ctx_builder.set_alpn_protos(&protocols_bytes)?;
+        self.ctx_builder.set_alpn_select_callback(move |_ssl, client_protos| {
+            // Parse client protocols (length-prefixed format) and find matches
+            let mut i = 0;
+            while i < client_protos.len() {
+                let len = client_protos[i] as usize;
+                if i + 1 + len > client_protos.len() {
+                    break;
+                }
+                let proto = &client_protos[i + 1..i + 1 + len];
+
+                // Check if this client protocol matches any of our server protocols
+                for server_proto in &protos_for_callback {
+                    if server_proto.as_bytes() == proto {
+                        // Return the slice from client_protos (has correct lifetime)
+                        return Ok(proto);
+                    }
+                }
+
+                i += 1 + len;
+            }
+
+            // No match found
+            Err(openssl::ssl::AlpnError::NOACK)
+        });
 
         Ok(self)
     }
@@ -411,7 +422,7 @@ impl ServerConfigBuilder {
     }
 
     /// Set OCSP staple response file
-    pub fn staple<P: AsRef<Path>>(mut self, path: P) -> Result<Self, TlsError> {
+    pub fn staple<P: AsRef<Path>>(self, path: P) -> Result<Self, TlsError> {
         // Read OCSP response
         let mut ocsp_resp = Vec::new();
         File::open(path.as_ref())?.read_to_end(&mut ocsp_resp)?;
