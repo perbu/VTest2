@@ -417,6 +417,7 @@ impl Default for FrameCodec {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::super::settings::SettingsBuilder;
 
     #[test]
     fn test_encode_decode_header() {

@@ -429,6 +429,16 @@ impl<S: SessionOps> H2Client<S> {
     pub fn remote_settings(&self) -> &Settings {
         &self.remote_settings
     }
+
+    /// Get reference to the underlying session
+    pub fn session(&self) -> &HttpSession<S> {
+        &self.session
+    }
+
+    /// Get mutable reference to the underlying session
+    pub fn session_mut(&mut self) -> &mut HttpSession<S> {
+        &mut self.session
+    }
 }
 
 /// HTTP/2 response
