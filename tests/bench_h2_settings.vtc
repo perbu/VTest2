@@ -1,0 +1,14 @@
+vtest "HTTP/2 Settings Exchange Benchmark"
+
+# Test HTTP/2 connection establishment and settings exchange
+
+server s1 {
+    rxreq
+    txresp -status 200 -body "OK"
+} -start
+
+client c1 -connect ${s1_sock} {
+    txreq -url "/"
+    rxresp
+    expect resp.status == 200
+} -run
