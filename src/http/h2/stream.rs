@@ -5,7 +5,6 @@
 use super::error::{Error, Result};
 use super::flow_control::StreamFlowControl;
 use super::frames::{DataFrame, HeadersFrame, PrioritySpec};
-use bytes::Bytes;
 use std::collections::HashMap;
 
 /// Stream ID type
@@ -377,8 +376,8 @@ impl StreamManager {
     pub fn get_or_create_stream(&mut self, stream_id: StreamId) -> Result<&mut H2Stream> {
         if !self.streams.contains_key(&stream_id) {
             // Validate stream ID parity
-            let is_client_initiated = (stream_id % 2) == 1;
-            let we_are_client = (self.next_stream_id % 2) == 1;
+            let _is_client_initiated = (stream_id % 2) == 1;
+            let _we_are_client = (self.next_stream_id % 2) == 1;
 
             // Server can create even IDs, client can create odd IDs
             // But we can receive any valid ID from peer
@@ -417,6 +416,7 @@ impl StreamManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bytes::Bytes;
 
     #[test]
     fn test_stream_state_transitions() {

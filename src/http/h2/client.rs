@@ -8,13 +8,12 @@ use super::error::{Error, ErrorCode, Result};
 use super::flow_control::ConnectionFlowControl;
 use super::frames::*;
 use super::settings::{Settings, SettingsBuilder};
-use super::stream::{H2Stream, StreamId, StreamManager};
+use super::stream::{StreamId, StreamManager};
 use super::{CONNECTION_PREFACE, CONNECTION_STREAM_ID};
 use crate::http::{SessionOps, HttpSession};
-use bytes::{Bytes, BytesMut};
+use bytes::Bytes;
 use hpack::Encoder as HpackEncoder;
 use std::collections::HashMap;
-use std::time::Duration;
 
 /// HTTP/2 client
 ///

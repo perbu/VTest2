@@ -19,7 +19,7 @@ use std::time::Duration;
 /// Wraps an OpenSSL SslStream and provides poll/read/write/close operations.
 pub struct TlsSessionOps {
     stream: SslStream<TcpStream>,
-    config: TlsConfig,
+    _config: TlsConfig,
     vars: TlsVars,
     failed: bool,
 }
@@ -55,7 +55,7 @@ impl TlsSessionOps {
 
         Ok(TlsSessionOps {
             stream: ssl_stream,
-            config,
+            _config: config,
             vars,
             failed: false,
         })
@@ -80,7 +80,7 @@ impl TlsSessionOps {
 
         Ok(TlsSessionOps {
             stream: ssl_stream,
-            config,
+            _config: config,
             vars,
             failed: false,
         })

@@ -2,7 +2,7 @@
 //!
 //! This module defines the frame types specified in RFC 7540 Section 6.
 
-use super::error::{Error, ErrorCode, Result};
+use super::error::ErrorCode;
 use super::settings::Settings;
 use bytes::Bytes;
 use std::fmt;

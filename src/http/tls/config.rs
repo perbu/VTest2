@@ -107,10 +107,10 @@ pub struct TlsConfig {
     pub(crate) is_server: bool,
     // Client-specific fields
     pub(crate) servername: Option<String>,
-    pub(crate) verify_peer: bool,
+    pub(crate) _verify_peer: bool,
     pub(crate) cert_status: bool,
-    pub(crate) sess_out: Option<String>,
-    pub(crate) sess_in: Option<String>,
+    pub(crate) _sess_out: Option<String>,
+    pub(crate) _sess_in: Option<String>,
 }
 
 impl TlsConfig {
@@ -168,10 +168,10 @@ impl ClientConfigBuilder {
         ClientConfigBuilder {
             ctx_builder,
             servername: None,
-            verify_peer: false,
+            verify_peer: false,  // Will be mapped to _verify_peer in TlsConfig
             cert_status: false,
-            sess_out: None,
-            sess_in: None,
+            sess_out: None,      // Will be mapped to _sess_out in TlsConfig
+            sess_in: None,       // Will be mapped to _sess_in in TlsConfig
         }
     }
 
@@ -282,10 +282,10 @@ impl ClientConfigBuilder {
             ctx: self.ctx_builder.build(),
             is_server: false,
             servername: self.servername,
-            verify_peer: self.verify_peer,
+            _verify_peer: self.verify_peer,
             cert_status: self.cert_status,
-            sess_out: self.sess_out,
-            sess_in: self.sess_in,
+            _sess_out: self.sess_out,
+            _sess_in: self.sess_in,
         })
     }
 }
@@ -341,12 +341,6 @@ impl ServerConfigBuilder {
 
     /// Set ALPN protocols
     pub fn alpn(mut self, protocols: &[&str]) -> Result<Self, TlsError> {
-        // For server, we need to set ALPN select callback
-        let protocols_vec: Vec<Vec<u8>> = protocols
-            .iter()
-            .map(|p| p.as_bytes().to_vec())
-            .collect();
-
         // Store protocols in a way that can be used by the callback
         // Note: This is simplified - in production you'd want to handle this more carefully
         let protocols_bytes: Vec<u8> = protocols
@@ -411,7 +405,7 @@ impl ServerConfigBuilder {
     }
 
     /// Set OCSP staple response file
-    pub fn staple<P: AsRef<Path>>(mut self, path: P) -> Result<Self, TlsError> {
+    pub fn staple<P: AsRef<Path>>(self, path: P) -> Result<Self, TlsError> {
         // Read OCSP response
         let mut ocsp_resp = Vec::new();
         File::open(path.as_ref())?.read_to_end(&mut ocsp_resp)?;
@@ -437,10 +431,10 @@ impl ServerConfigBuilder {
             ctx: self.ctx_builder.build(),
             is_server: true,
             servername: None,
-            verify_peer: false,
+            _verify_peer: false,
             cert_status: false,
-            sess_out: None,
-            sess_in: None,
+            _sess_out: None,
+            _sess_in: None,
         })
     }
 
@@ -504,7 +498,7 @@ mod tests {
 
         assert!(!config.is_server);
         assert_eq!(config.servername, Some("example.com".to_string()));
-        assert!(!config.verify_peer);
+        assert!(!config._verify_peer);
     }
 
     #[test]

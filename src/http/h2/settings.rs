@@ -186,7 +186,7 @@ impl Settings {
     /// Validate settings values
     pub fn validate(&self) -> Result<()> {
         // Validate SETTINGS_ENABLE_PUSH (must be 0 or 1)
-        if let Some(enable_push) = self.enable_push {
+        if let Some(_enable_push) = self.enable_push {
             // Already a bool, so always valid
         }
 

@@ -2,7 +2,7 @@
 //!
 //! This module provides parsers for HTTP requests and responses.
 
-use super::{Error, Result, Headers, HttpRequest, HttpResponse, Method, Status, Version, CRLF};
+use super::{Error, Result, Headers, HttpRequest, HttpResponse, Method, Status, Version};
 
 /// Find the next CRLF in a buffer
 fn find_crlf(buf: &[u8]) -> Option<usize> {

@@ -3,7 +3,6 @@
 //! This module will provide HTTP/2 server functionality with low-level frame control.
 //! Currently a placeholder for future implementation.
 
-use super::error::{Error, Result};
 
 /// HTTP/2 server (placeholder)
 ///

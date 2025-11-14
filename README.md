@@ -26,8 +26,34 @@ make test                               # Build and run tests
 
 Test files start with `vtest` or `varnishtest` followed by a description. See `tests/` directory for examples.
 
+## Rust HTTP/2 Implementation
+
+VTest2 includes a complete HTTP/2 protocol implementation written in Rust, providing:
+
+- **Low-level frame control** - Direct frame construction for testing edge cases
+- **Complete frame support** - All HTTP/2 frame types (DATA, HEADERS, SETTINGS, PING, etc.)
+- **Flow control** - Connection and stream-level window management
+- **Stream multiplexing** - Multiple concurrent streams per connection
+- **HPACK compression** - Header compression/decompression
+- **TLS with ALPN** - HTTP/2 over TLS with protocol negotiation
+
+### Testing Features
+
+- 192+ passing tests (153 unit, 24 HTTP/2 integration, 6 HTTP, 9 network)
+- Frame encoding/decoding validation
+- Flow control violation detection
+- Invalid frame sequence testing
+- Large body transfer handling
+- Concurrent stream management
+
+See `HTTP2.md` for detailed documentation and usage examples.
+
 ## Syncing with Varnish-Cache
 
 For maintainers: `make update` syncs shared code from Varnish-Cache. Set `VARNISHSRC` to use a local repo instead of cloning.
 
-See `CLAUDE.md` for architecture details and `TLS-IMPL.md` for TLS support documentation.
+## Documentation
+
+- `CLAUDE.md` - Architecture details and development guide
+- `TLS-IMPL.md` - TLS support documentation
+- `HTTP2.md` - HTTP/2 implementation and testing guide

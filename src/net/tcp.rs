@@ -3,7 +3,7 @@
 //! This module provides TCP-specific operations and extensions.
 //! It's equivalent to the C `vtcp.c` module.
 
-use std::io::{self, Read, Write};
+use std::io::{self, Read};
 use std::net::{TcpListener, TcpStream, SocketAddr};
 use std::os::fd::AsRawFd;
 use std::time::Duration;
@@ -471,6 +471,7 @@ pub fn is_acceptable_error(err: &io::Error) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::{Read, Write};
 
     #[test]
     fn test_tcp_connect_timeout() {
