@@ -28,6 +28,9 @@ pub trait SessionOps {
     /// Write data to the session
     fn write(&mut self, buf: &[u8]) -> Result<usize>;
 
+    /// Flush written data
+    fn flush(&mut self) -> Result<()>;
+
     /// Close the session
     fn close(&mut self) -> Result<()>;
 }
@@ -82,7 +85,12 @@ impl<S: SessionOps> HttpSession<S> {
             return Err(Error::Timeout);
         }
 
-        self.session.write(buf)
+        let n = self.session.write(buf)?;
+
+        // Flush to ensure data is sent immediately
+        self.session.flush()?;
+
+        Ok(n)
     }
 
     /// Close the session
@@ -156,6 +164,11 @@ impl SessionOps for FdSessionOps {
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         self.stream.write(buf).map_err(Error::from)
+    }
+
+    fn flush(&mut self) -> Result<()> {
+        use std::io::Write;
+        self.stream.flush().map_err(Error::from)
     }
 
     fn close(&mut self) -> Result<()> {

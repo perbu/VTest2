@@ -341,20 +341,39 @@ impl ServerConfigBuilder {
 
     /// Set ALPN protocols
     pub fn alpn(mut self, protocols: &[&str]) -> Result<Self, TlsError> {
-        // Store protocols in a way that can be used by the callback
-        // Note: This is simplified - in production you'd want to handle this more carefully
-        let protocols_bytes: Vec<u8> = protocols
+        // Store protocols for the selection callback
+        let protocols_vec: Vec<Vec<u8>> = protocols
             .iter()
-            .flat_map(|p| {
-                let mut v = vec![p.len() as u8];
-                v.extend_from_slice(p.as_bytes());
-                v
-            })
+            .map(|p| p.as_bytes().to_vec())
             .collect();
 
-        // Set the ALPN selection callback
-        // Note: This is a simplified version
-        self.ctx_builder.set_alpn_protos(&protocols_bytes)?;
+        // Set the ALPN selection callback (server-side protocol negotiation)
+        self.ctx_builder.set_alpn_select_callback(move |_ssl, client_protos| {
+            // Parse client protocols (length-prefixed format)
+            let mut pos = 0;
+            while pos < client_protos.len() {
+                let len = client_protos[pos] as usize;
+                pos += 1;
+                if pos + len <= client_protos.len() {
+                    let client_proto = &client_protos[pos..pos + len];
+
+                    // Check if this matches any of our protocols
+                    for proto in &protocols_vec {
+                        if client_proto == proto.as_slice() {
+                            // Return the matching protocol from client_protos (valid lifetime)
+                            return Ok(client_proto);
+                        }
+                    }
+
+                    pos += len;
+                } else {
+                    break;
+                }
+            }
+
+            // No match - return error
+            Err(openssl::ssl::AlpnError::NOACK)
+        });
 
         Ok(self)
     }

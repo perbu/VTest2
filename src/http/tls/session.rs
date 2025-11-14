@@ -169,6 +169,14 @@ impl SessionOps for TlsSessionOps {
         }
     }
 
+    fn flush(&mut self) -> HttpResult<()> {
+        self.stream.flush().map_err(|e| {
+            self.failed = true;
+            self.vars.failed = true;
+            Error::Io(e)
+        })
+    }
+
     fn close(&mut self) -> HttpResult<()> {
         // Perform SSL shutdown if not failed
         if !self.failed {
