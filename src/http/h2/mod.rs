@@ -96,10 +96,10 @@ pub mod settings;
 pub mod error;
 pub mod codec;
 
-pub use client::{H2Client, H2ClientBuilder};
-pub use server::{H2Server, H2ServerBuilder};
+pub use client::{H2Client, H2ClientBuilder, H2Response};
+pub use server::{H2Server, H2ServerBuilder, H2Request};
 pub use stream::{StreamId, StreamState, H2Stream};
-pub use frames::{Frame, FrameType, FrameFlags, DataFrame, HeadersFrame, SettingsFrame};
+pub use frames::{Frame, FrameType, FrameFlags, DataFrame, HeadersFrame, SettingsFrame, PushPromiseFrame};
 pub use settings::{Settings, SettingsBuilder};
 pub use error::{Error, Result};
 
