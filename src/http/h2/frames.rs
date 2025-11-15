@@ -347,6 +347,25 @@ pub struct PushPromiseFrame {
     pub padding: Option<u8>,
 }
 
+impl PushPromiseFrame {
+    /// Create a new PUSH_PROMISE frame
+    pub fn new(stream_id: u32, promised_stream_id: u32, header_block: Bytes, end_headers: bool) -> Self {
+        PushPromiseFrame {
+            stream_id,
+            promised_stream_id,
+            header_block,
+            end_headers,
+            padding: None,
+        }
+    }
+
+    /// Add padding to the frame
+    pub fn with_padding(mut self, padding: u8) -> Self {
+        self.padding = Some(padding);
+        self
+    }
+}
+
 /// PING frame (RFC 7540 Section 6.7)
 #[derive(Debug, Clone, Copy)]
 pub struct PingFrame {

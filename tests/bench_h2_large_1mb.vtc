@@ -1,0 +1,16 @@
+vtest "HTTP/2 Large Body Transfer (1MB) Benchmark"
+
+# Test large body transfer (1MB)
+
+server s1 {
+    rxreq
+    # Generate 1MB response (1024 * 1024 = 1048576 bytes)
+    txresp -status 200 -bodylen 1048576
+} -start
+
+client c1 -connect ${s1_sock} {
+    txreq -url "/"
+    rxresp
+    expect resp.status == 200
+    expect resp.bodylen == 1048576
+} -run

@@ -327,6 +327,50 @@ impl FrameCodec {
         buf.freeze()
     }
 
+    /// Encode a PUSH_PROMISE frame
+    pub fn encode_push_promise_frame(frame: &PushPromiseFrame) -> Bytes {
+        let mut buf = BytesMut::new();
+
+        // Calculate payload length: 4 bytes (promised stream ID) + header block + padding
+        let mut payload_len = 4 + frame.header_block.len();
+        let mut flags = FrameFlags::empty();
+
+        if frame.end_headers {
+            flags.set(FrameFlags::END_HEADERS);
+        }
+
+        // Add padding if requested
+        let padding_len = if let Some(pad_len) = frame.padding {
+            flags.set(FrameFlags::PADDED);
+            payload_len += 1 + pad_len as usize;
+            pad_len
+        } else {
+            0
+        };
+
+        // Write frame header
+        let header = Self::encode_header(FrameType::PushPromise, flags, frame.stream_id, payload_len);
+        buf.put_slice(&header);
+
+        // Write padding length if padded
+        if frame.padding.is_some() {
+            buf.put_u8(padding_len);
+        }
+
+        // Write promised stream ID (reserved bit must be 0)
+        buf.put_u32(frame.promised_stream_id & 0x7FFFFFFF);
+
+        // Write header block fragment
+        buf.put_slice(&frame.header_block);
+
+        // Write padding
+        if padding_len > 0 {
+            buf.put_bytes(0, padding_len as usize);
+        }
+
+        buf.freeze()
+    }
+
     /// Write a frame to a writer (generic over any Write)
     pub fn write_frame<W: Write>(writer: &mut W, frame_data: &[u8]) -> io::Result<()> {
         writer.write_all(frame_data)?;
