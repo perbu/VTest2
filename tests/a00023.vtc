@@ -22,7 +22,7 @@ shell {
 	client c1 -run
 	EOF
 
-	vtest -v _.vtc >_.log
+	${pwd}/vtest -v _.vtc >_.log
 }
 
 shell -match "s1 +rxhdr" { cat _.log }

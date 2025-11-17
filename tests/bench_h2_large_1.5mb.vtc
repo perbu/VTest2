@@ -1,0 +1,17 @@
+vtest "HTTP/2 Large Body Transfer (1.5MB) Benchmark"
+
+# Test large body transfer (1.5MB)
+# Note: VTest has a 2MB receive buffer limit, so we keep this under that threshold
+
+server s1 {
+    rxreq
+    # Generate 1.5MB response (1536 * 1024 = 1572864 bytes)
+    txresp -status 200 -bodylen 1572864
+} -start
+
+client c1 -connect ${s1_sock} {
+    txreq -url "/"
+    rxresp
+    expect resp.status == 200
+    expect resp.bodylen == 1572864
+} -run
